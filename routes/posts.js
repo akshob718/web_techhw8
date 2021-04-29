@@ -15,7 +15,7 @@ router.get('/trending', function(req, res) {
     let carousel = []
     const url1 = 'https://api.themoviedb.org/3/movie/now_playing?api_key=03c7be34ae4a13f6d8a98a10893e2100&language=en-US&page=1'
     axios.get(url1).then(data => {
-        for (var i = 0; i < Math.min(data.data.results.length, 5); i++) {
+        for (var i = 0; i < Math.min(data.data.results.length, 10); i++) {
             carousel.push({ "id": data.data.results[i]["id"], "title": data.data.results[i]["title"], "poster_path": data.data.results[i]["backdrop_path"] })
         }
         //console.log(carousel);
@@ -24,6 +24,23 @@ router.get('/trending', function(req, res) {
         res.send(err)
     });
 });
+
+
+// adding new 29
+router.get('/trendingTVShows', function(req, res) {
+    let carousel = []
+    const url1 = 'https://api.themoviedb.org/3/trending/tv/day?api_key=03c7be34ae4a13f6d8a98a10893e2100'
+    axios.get(url1).then(data => {
+        for (var i = 0; i < Math.min(data.data.results.length, 10); i++) {
+            carousel.push({ "id": data.data.results[i]["id"], "title": data.data.results[i]["title"], "poster_path": data.data.results[i]["backdrop_path"] })
+        }
+        //console.log(carousel);
+        res.json(carousel)
+    }).catch(err => {
+        res.send(err)
+    });
+});
+
 
 // router.get('/:id', function(req, res){
 //     let id = req.params.id;
