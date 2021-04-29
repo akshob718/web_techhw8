@@ -347,6 +347,25 @@ router.get('/castDetails/:id', function(req, res, next) {
     });
 });
 
+//Tvshow Video
+router.get('/tvshowVideo/:tvshow_id', function(req, res) {
+	let tvshow_id=req.params.tvshow_id;
+	axios.get("https://api.themoviedb.org/3/"+"tv/"+tvshow_id+"/videos?api_key="+API_KEY+"&language=en-US&page=1")
+	.then(response => {
+		let data=response.data.results;
+		let finalData=[]
+		for(let k in data){
+			var dict={};
+			dict["site"]=data[k]["site"];
+			dict["type"]=data[k]["type"];
+			dict["name"]=data[k]["name"];
+			dict["key"]=data[k]["key"];
+			finalData.push(dict);
+		}
+		console.log(finalData);
+		res.json(finalData);
+	}).catch(error => {res.send(error);})
+});
 
 
 module.exports = router;
