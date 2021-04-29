@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 
 const api_key = "03c7be34ae4a13f6d8a98a10893e2100";
+const BASE_URL="https://api.themoviedb.org/3/";
 
 router.get('/trending', function(req, res) {
     // let url = 'https://jsonplaceholder.typicode.com/posts';
@@ -468,6 +469,126 @@ router.get('/tvshowDetails/:tvshow_id', (req, res, next) => {
 		dict["vote_average"]=data["vote_average"];
 		dict["tagline"]=data["tagline"];
 		finalData.push(dict);
+		console.log(finalData);
+		res.json(finalData);
+	}).catch(error => {res.send(error);})
+});
+
+
+//Recommended Movies
+router.get('/recommendedMovies/:movie_id', (req, res) => {
+	let movie_id=req.params.movie_id;
+	axios.get(BASE_URL+"movie/"+movie_id+"/recommendations?api_key="+api_key+"&language=en-US&page=1")
+	.then(response => {
+		let data=response.data.results;
+		let finalData=[]
+		for(let k in data){
+			var dict={};
+			dict["media"]="movie";
+			dict["id"]=data[k]["id"];
+			dict["title"]=data[k]["title"];
+			dict["poster_path"]="https://image.tmdb.org/t/p/w154"+data[k]["poster_path"];
+			if(data["poster_path"] != null || data["poster_path"] != ""){
+				finalData.push(dict);
+			}
+		}
+		console.log(finalData);
+		res.json(finalData);
+	}).catch(error => {res.send(error);})
+});
+
+//Recommended TV Shows
+router.get('/recommendedTvshows/:tvshow_id', (req, res) => {
+	let tvshow_id=req.params.tvshow_id;
+	axios.get(BASE_URL+"tv/"+tvshow_id+"/recommendations?api_key="+api_key+"&language=en-US&page=1")
+	.then(response => {
+		let data=response.data.results;
+		let finalData=[]
+		for(let k in data){
+			var dict={};
+			dict["media"]="tv";
+			dict["id"]=data[k]["id"];
+			dict["title"]=data[k]["name"];
+			dict["poster_path"]="https://image.tmdb.org/t/p/w154"+data[k]["poster_path"];
+			if(data["poster_path"] != null || data["poster_path"] != ""){
+				finalData.push(dict);
+			}
+		}
+		console.log(finalData);
+		res.json(finalData);
+	}).catch(error => {res.send(error);})
+});
+
+
+//Movie Reviews
+router.get('/movieReviews/:movie_id', (req, res) => {
+	let movie_id=req.params.movie_id;
+	axios.get(BASE_URL+"movie/"+movie_id+"/reviews?api_key="+api_key+"&language=en-US&page=1")
+	.then(response => {
+		let data=response.data.results;
+		let finalData=[];
+		let count=0;
+		let ad;
+		for(let k in data){
+			if(count<10){
+				var dict={};
+				dict["author"]=data[k]["author"];
+				dict["content"]=data[k]["content"];
+				dict["created_at"]=new Date(data[k]["created_at"]);
+				dict["url"]=data[k]["url"];
+				ad=data[k]["author_details"];
+				dict["username"]=ad["username"];
+				dict["rating"]=ad["rating"];
+				if(ad["rating"] == null){
+					dict["rating"]=0;
+				}
+				if(ad["avatar_path"] !=null)
+					dict["avatar_path"]="https://image.tmdb.org/t/p/w92"+ad["avatar_path"];
+				else
+					dict["avatar_path"]="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHnPmUvFLjjmoYWAbLTEmLLIRCPpV_OgxCVA&usqp=CAU";
+				
+				finalData.push(dict);
+				count=count+1;
+			}
+		}
+		console.log(finalData);
+		res.json(finalData);
+	}).catch(error => {res.send(error);})
+});
+
+
+//Tvshow Reviews
+router.get('/tvshowReviews/:tvshow_id', (req, res) => {
+	let tvshow_id=req.params.tvshow_id;
+	axios.get(BASE_URL+"tv/"+tvshow_id+"/reviews?api_key="+api_key+"&language=en-US&page=1")
+	.then(response => {
+		let data=response.data.results;
+		console.log(data);
+		let finalData=[];
+		let count=0;
+		let ad;
+		for(let k in data){
+			if(count<10){
+				var dict={};
+				dict["author"]=data[k]["author"];
+				dict["content"]=data[k]["content"];
+				dict["created_at"]=new Date(data[k]["created_at"]);
+				dict["url"]=data[k]["url"];
+				ad=data[k]["author_details"];
+				dict["username"]=ad["username"];
+				dict["rating"]=ad["rating"];
+				if(ad["rating"] == null){
+					dict["rating"]=0;
+				}
+				if(ad["avatar_path"] !="")
+					dict["avatar_path"]="https://image.tmdb.org/t/p/w92"+ad["avatar_path"];
+				else
+					dict["avatar_path"]="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHnPmUvFLjjmoYWAbLTEmLLIRCPpV_OgxCVA&usqp=CAU";
+				
+				finalData.push(dict);
+				count=count+1
+			}
+		}
 		console.log(finalData);
 		res.json(finalData);
 	}).catch(error => {res.send(error);})
