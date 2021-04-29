@@ -347,10 +347,32 @@ router.get('/castDetails/:id', function(req, res, next) {
     });
 });
 
-//Tvshow Video
-router.get('/tvshowVideo/:tvshow_id', function(req, res) {
+
+router.get('/tvshowVideo/:tvshow_id', function(req, res, next) {
 	let tvshow_id=req.params.tvshow_id;
-	axios.get("https://api.themoviedb.org/3/"+"tv/"+tvshow_id+"/videos?api_key="+API_KEY+"&language=en-US&page=1")
+    let url_1 = "https://api.themoviedb.org/3/tv/"+tvshow_id+"/videos?api_key="+api_key+"&language=en-US&page=1"
+	axios.get(url_1).then(response => {
+		let data = response.data.results;
+		let finalData=[]
+		for(let k in data){
+			var dict={};
+			dict["site"]=data[k]["site"];
+			dict["type"]=data[k]["type"];
+			dict["name"]=data[k]["name"];
+			dict["key"]=data[k]["key"];
+			finalData.push(dict);
+		}
+		//console.log(finalData);
+		res.send(finalData);
+	}).catch(error => {
+        res.send(error)
+    });
+});
+
+//Movie Video
+router.get('/movieVideo/:movie_id', (req, res, next) => {
+	let movie_id=req.params.movie_id;
+	axios.get("https://api.themoviedb.org/3/"+"movie/"+movie_id+"/videos?api_key="+api_key+"&language=en-US&page=1")
 	.then(response => {
 		let data=response.data.results;
 		let finalData=[]
@@ -362,10 +384,93 @@ router.get('/tvshowVideo/:tvshow_id', function(req, res) {
 			dict["key"]=data[k]["key"];
 			finalData.push(dict);
 		}
+		res.json(finalData);
+	}).catch(error => {res.send(error);})
+});
+
+
+//Movie Details
+router.get('/movieDetails/:movie_id', (req, res) => {
+	let movie_id=req.params.movie_id;
+	console.log(movie_id);
+	let url="https://api.themoviedb.org/3/"+"movie/"+movie_id+"?api_key="+api_key+"&language=en-US&page=1";
+	console.log(url);
+	axios.get(url)
+	.then(response => {
+		let data=response.data;
+		let finalData=[];
+		var dict={};
+		let genres=[];
+		let spoken_languages=[];
+		dict["id"]=data["id"];
+		dict["title"]=data["title"];
+		dict["release_date"]=data["release_date"].slice(0,4);
+		dict["poster_path"]="https://image.tmdb.org/t/p/w154"+data["poster_path"];
+		dict["media"]="movie";
+
+		for(let g in data["genres"]){
+			genres.push(data["genres"][g]["name"]);
+		}
+		dict["genres"]=genres.join(",");
+
+		for(let l in data["spoken_languages"]){
+			spoken_languages.push(data["spoken_languages"][l]["english_name"])
+		}
+		dict["spoken_languages"]=spoken_languages.join(",");
+
+		var hours = Math.floor(data["runtime"] / 60);  
+  		var minutes = data["runtime"] % 60;   
+		dict["runtime"]=hours+"hrs "+minutes+"mins";;
+
+		dict["overview"]=data["overview"];
+		dict["vote_average"]=data["vote_average"];
+		dict["tagline"]=data["tagline"];
+		finalData.push(dict);
 		console.log(finalData);
 		res.json(finalData);
 	}).catch(error => {res.send(error);})
 });
 
+//Tvshow Details
+router.get('/tvshowDetails/:tvshow_id', (req, res, next) => {
+	let tvshow_id=req.params.tvshow_id;
+	axios.get("https://api.themoviedb.org/3/"+"tv/"+tvshow_id+"?api_key="+api_key+"&language=en-US&page=1")
+	.then(response => {
+		let data=response.data;
+		let finalData=[];
+		var dict={};
+		let genres=[];
+		let spoken_languages=[];
+		dict["id"]=data["id"];
+		dict["name"]=data["name"];
+		dict["first_air_date"]=data["first_air_date"].slice(0,4);
+		dict["poster_path"]="https://image.tmdb.org/t/p/w154"+data["poster_path"];
+		dict["media"]="tv";
+
+		for(let g in data["genres"]){
+			genres.push(data["genres"][g]["name"]);
+		}
+		dict["genres"]=genres.join(",");
+
+		for(let l in data["spoken_languages"]){
+			spoken_languages.push(data["spoken_languages"][l]["english_name"])
+		}	
+		
+		dict["spoken_languages"]=spoken_languages.join(",");
+		for(let r in data["episode_run_time"]){
+			var hours = Math.floor(data["episode_run_time"][r] / 60);  
+			console.log('HOURS:',hours);
+  			var minutes = data["episode_run_time"][r] % 60;   
+			dict["episode_runtime"]=hours+"hrs "+minutes+"mins";
+		}
+		
+		dict["overview"]=data["overview"];
+		dict["vote_average"]=data["vote_average"];
+		dict["tagline"]=data["tagline"];
+		finalData.push(dict);
+		console.log(finalData);
+		res.json(finalData);
+	}).catch(error => {res.send(error);})
+});
 
 module.exports = router;
